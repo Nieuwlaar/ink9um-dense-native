@@ -1,0 +1,93 @@
+{
+  "description": "Native-domain fine-tune pilot: initialize from soup42_last4, train ONLY on the 5 native PHerc0139 label segments (w035 w039 w040 w041 w044), AdamW 2e-5, 12k steps, checkpoint every 3k. Derived from configs/aligned21_hybrid_3d2d.json.",
+  "mode": "flat",
+  "model_type": "vesuvius_unet_3d_stem_2d",
+  "model_config": {
+    "autoconfigure": true,
+    "basic_encoder_block": "BasicBlockD",
+    "basic_decoder_block": "ConvBlock",
+    "stem_channels": 16,
+    "z_projection_mode": "none"
+  },
+  "targets": {
+    "ink": {
+      "activation": "none",
+      "out_channels": 1,
+      "z_projection_mode": "none"
+    }
+  },
+  "in_channels": 1,
+  "patch_size": [
+    17,
+    128,
+    128
+  ],
+  "patch_overlap": 0.25,
+  "patch_min_labeled_coverage": 0.0,
+  "flat_z_window_jitter": {
+    "enabled": true,
+    "window_depth": 17,
+    "max_offset": 2,
+    "probability": 1.0,
+    "padding": "forbidden"
+  },
+  "image_normalization": {
+    "mode": "robust_mad",
+    "percentile_lower": 1.0,
+    "percentile_upper": 99.0
+  },
+  "augmentation_preset": "default",
+  "augmentation_rotation_axes": [
+    0
+  ],
+  "loss": {
+    "bce_label_smoothing": 0.5,
+    "dice_label_smoothing": 0.0
+  },
+  "checkpoint": "soup42_last4.pth",
+  "weights_only": true,
+  "optimizer": "adamw",
+  "learning_rate": 2e-05,
+  "weight_decay": 3e-05,
+  "scheduler": {
+    "name": "diffusers_cosine_warmup"
+  },
+  "warmup_steps": 250,
+  "grad_clip": 1.0,
+  "mixed_precision": "fp16",
+  "batch_size": 64,
+  "num_iterations": 12000,
+  "seed": 42,
+  "sampling_strategy": "uniform",
+  "best_checkpoint_metric": null,
+  "save_every": 3000,
+  "val_every": 3000,
+  "val_steps": 32,
+  "val_preview_batches": 1,
+  "log_every": 50,
+  "dataloader_workers": 8,
+  "pin_memory": true,
+  "verify_finite_gradients_steps": 0,
+  "max_amp_overflow_events": 0,
+  "out_dir": "run",
+  "datasets": [
+    {
+      "segments_path": "data/labels/native9-scrollprizeorg-21slices",
+      "segments": [
+        "w035",
+        "w039",
+        "w040",
+        "w041",
+        "w044"
+      ],
+      "surface_volume_paths": {
+        "w035": "data/volumes/w035.zarr",
+        "w039": "data/volumes/w039.zarr",
+        "w040": "data/volumes/w040.zarr",
+        "w041": "data/volumes/w041.zarr",
+        "w044": "data/volumes/w044.zarr"
+      },
+      "volume_scale": 0
+    }
+  ]
+}

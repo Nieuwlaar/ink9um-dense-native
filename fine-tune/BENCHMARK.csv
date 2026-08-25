@@ -1,0 +1,13 @@
+name,checkpoint,segment,auc_vs_78keV,misreg_max
+soup42-sanity,soup42_last4.pth,title,0.8402,0.648
+soup42-sanity,soup42_last4.pth,w024,0.8926,0.690
+smoke-ft50,ckpt_000050.pth,title,0.8204,0.632
+smoke-ft50,ckpt_000050.pth,w024,0.8755,0.682
+ft-003000,ckpt_003000.pth,title,0.8125,0.612
+ft-003000,ckpt_003000.pth,w024,0.8410,0.664
+ft-006000,ckpt_006000.pth,title,0.8018,0.621
+ft-006000,ckpt_006000.pth,w024,0.8253,0.664
+ft-009000,ckpt_009000.pth,title,0.7984,0.617
+ft-009000,ckpt_009000.pth,w024,0.8189,0.651
+ft-012000,ckpt_012000.pth,title,0.7994,0.619
+ft-012000,ckpt_012000.pth,w024,0.8191,0.653

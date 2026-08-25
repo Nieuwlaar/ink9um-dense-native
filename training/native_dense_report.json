@@ -1,0 +1,200 @@
+{
+ "w030": {
+  "segment_dir": "20250108000005-w030_2025010818",
+  "shape_zyx": [
+   28,
+   7140,
+   7460
+  ],
+  "theta": 47,
+  "theta_source": "median-of-native9-calibration",
+  "valid_frac_canvas": 0.8406,
+  "supervision_frac_canvas": 0.8405,
+  "supervision_frac_of_valid": 0.99998,
+  "ink_frac_canvas": 0.2527,
+  "ink_frac_of_supervision": 0.3006,
+  "supervised_px": 44771024,
+  "ink_px": 13458780,
+  "teacher_tif": "PHerc0139-20250108000005-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": null
+ },
+ "w032": {
+  "segment_dir": "20260203000000-w032_2026020303",
+  "shape_zyx": [
+   28,
+   7100,
+   7600
+  ],
+  "theta": 47,
+  "theta_source": "median-of-native9-calibration",
+  "valid_frac_canvas": 0.8477,
+  "supervision_frac_canvas": 0.8477,
+  "supervision_frac_of_valid": 0.99998,
+  "ink_frac_canvas": 0.2854,
+  "ink_frac_of_supervision": 0.3367,
+  "supervised_px": 45742673,
+  "ink_px": 15401231,
+  "teacher_tif": "PHerc0139-20260203000000-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": null
+ },
+ "w033": {
+  "segment_dir": "20260219000000-w033_2026021913",
+  "shape_zyx": [
+   28,
+   7100,
+   7680
+  ],
+  "theta": 47,
+  "theta_source": "median-of-native9-calibration",
+  "valid_frac_canvas": 0.8532,
+  "supervision_frac_canvas": 0.8532,
+  "supervision_frac_of_valid": 0.99999,
+  "ink_frac_canvas": 0.3211,
+  "ink_frac_of_supervision": 0.3763,
+  "supervised_px": 46520564,
+  "ink_px": 17507392,
+  "teacher_tif": "PHerc0139-20260219000000-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": null
+ },
+ "w034": {
+  "segment_dir": "20260303000000-w034_2026030317",
+  "shape_zyx": [
+   28,
+   7040,
+   7720
+  ],
+  "theta": 47,
+  "theta_source": "median-of-native9-calibration",
+  "valid_frac_canvas": 0.8529,
+  "supervision_frac_canvas": 0.8528,
+  "supervision_frac_of_valid": 0.99998,
+  "ink_frac_canvas": 0.2002,
+  "ink_frac_of_supervision": 0.2347,
+  "supervised_px": 46351309,
+  "ink_px": 10880314,
+  "teacher_tif": "PHerc0139-20260303000000-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": null
+ },
+ "w040": {
+  "segment_dir": "20250831000000-w040_2025083102",
+  "shape_zyx": [
+   28,
+   6400,
+   7980
+  ],
+  "theta": 48,
+  "theta_source": "own-calibration",
+  "valid_frac_canvas": 0.8507,
+  "supervision_frac_canvas": 0.8507,
+  "supervision_frac_of_valid": 0.99996,
+  "ink_frac_canvas": 0.1722,
+  "ink_frac_of_supervision": 0.2024,
+  "supervised_px": 43447260,
+  "ink_px": 8793828,
+  "teacher_tif": "PHerc0139-20250831000000-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": {
+   "manual_sup_frac_canvas": 0.0319,
+   "manual_ink_px": 745601,
+   "teacher_vs_manual_pixel_agreement_on_manual_sup": 0.7899
+  }
+ },
+ "w041": {
+  "segment_dir": "20260108000000-w041_2026010816",
+  "shape_zyx": [
+   28,
+   6200,
+   8020
+  ],
+  "theta": 46,
+  "theta_source": "own-calibration",
+  "valid_frac_canvas": 0.8631,
+  "supervision_frac_canvas": 0.8631,
+  "supervision_frac_of_valid": 0.99997,
+  "ink_frac_canvas": 0.2117,
+  "ink_frac_of_supervision": 0.2453,
+  "supervised_px": 42915391,
+  "ink_px": 10528566,
+  "teacher_tif": "PHerc0139-20260108000000-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": {
+   "manual_sup_frac_canvas": 0.0112,
+   "manual_ink_px": 231420,
+   "teacher_vs_manual_pixel_agreement_on_manual_sup": 0.818
+  }
+ },
+ "w043": {
+  "segment_dir": "20260112000000-w043_2026011217",
+  "shape_zyx": [
+   28,
+   6120,
+   8120
+  ],
+  "theta": 47,
+  "theta_source": "median-of-native9-calibration",
+  "valid_frac_canvas": 0.8714,
+  "supervision_frac_canvas": 0.8714,
+  "supervision_frac_of_valid": 0.99998,
+  "ink_frac_canvas": 0.2663,
+  "ink_frac_of_supervision": 0.3056,
+  "supervised_px": 43302280,
+  "ink_px": 13234949,
+  "teacher_tif": "PHerc0139-20260112000000-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": null
+ },
+ "w046": {
+  "segment_dir": "20260325000000-w046_20260325",
+  "shape_zyx": [
+   28,
+   5980,
+   8260
+  ],
+  "theta": 47,
+  "theta_source": "median-of-native9-calibration",
+  "valid_frac_canvas": 0.872,
+  "supervision_frac_canvas": 0.872,
+  "supervision_frac_of_valid": 0.99998,
+  "ink_frac_canvas": 0.2058,
+  "ink_frac_of_supervision": 0.236,
+  "supervised_px": 43070419,
+  "ink_px": 10163585,
+  "teacher_tif": "PHerc0139-20260325000000-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": null
+ },
+ "w049": {
+  "segment_dir": "20260318000000-w049_20260318",
+  "shape_zyx": [
+   28,
+   5660,
+   9400
+  ],
+  "theta": 47,
+  "theta_source": "median-of-native9-calibration",
+  "valid_frac_canvas": 0.8787,
+  "supervision_frac_canvas": 0.8787,
+  "supervision_frac_of_valid": 0.99999,
+  "ink_frac_canvas": 0.1138,
+  "ink_frac_of_supervision": 0.1295,
+  "supervised_px": 46748107,
+  "ink_px": 6053132,
+  "teacher_tif": "PHerc0139-20260318000000-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": null
+ },
+ "w050": {
+  "segment_dir": "20260302000001-w050_2026030220",
+  "shape_zyx": [
+   28,
+   5300,
+   3880
+  ],
+  "theta": 47,
+  "theta_source": "median-of-native9-calibration",
+  "valid_frac_canvas": 0.863,
+  "supervision_frac_canvas": 0.863,
+  "supervision_frac_of_valid": 0.99999,
+  "ink_frac_canvas": 0.0921,
+  "ink_frac_of_supervision": 0.1067,
+  "supervised_px": 17746495,
+  "ink_px": 1893223,
+  "teacher_tif": "PHerc0139-20260302000001-2.399um-0.22m-78keV-volume-20260102150214-20260417190342-new_canon_autoresearch_recipe-tile256-stride128.tif",
+  "manual_labels_merged": null
+ }
+}
