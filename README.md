@@ -5,6 +5,8 @@ license: mit
 # Native ink detection, measured and hardened
 > Code mirror. The model weights live on Hugging Face: https://huggingface.co/Nieuwlaar/ink9um-dense-native
 
+> Code is also mirrored on GitHub: https://github.com/Nieuwlaar/ink9um-dense-native
+
 
 Author: Erwin Nieuwlaar (GitHub: Nieuwlaar)
 
@@ -24,7 +26,7 @@ The month's arc on one fully held-out segment, the PHerc0139 title bar:
 | released `ink_9um` checkpoint (s42-75k) | 0.8135 |
 | + checkpoint soup | 0.8402 |
 | + z-window ensemble | 0.8552 |
-| KLAVIS dense pseudo-label training (independent replication) | 0.9147 |
+| KLAVIS dense pseudo-label training (his `dense9um-w016excluded-step075000`, the strongest of the public checkpoints on this benchmark; independent replication) | 0.9147 |
 | **+ dense native-scan pseudo-labels (this repo's training run)** | **0.9548** |
 
 Everything here uses public data only: the MIT-licensed `ink_9um` checkpoints
