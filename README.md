@@ -431,6 +431,12 @@ window mean cancels the two lobes. So the usable raw signature is the
 surface-vs-deep contrast (the depth-band gate above), not any single
 window's sign.
 
+The study's consolidated figure and polarity table ship with this repo:
+`figures/fig2_polarity_and_halo.png` (radial halo profiles + per-scroll
+polarity on the balanced-box test, with CIs) and `figures/polarity_table.md`
+(every measurement, sources marked, independently recomputed before
+publication).
+
 Two scoping notes. The quick check quoted in the release thread ("55 to
 62% brighter") was run on a teacher-selected component population; the
 full study above, on all components and on manual labels, lands at 52/46%,
