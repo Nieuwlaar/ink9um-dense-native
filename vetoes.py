@@ -256,6 +256,41 @@ def apply_vetoes(prob, stack, th=0.30, min_area=300, valid=None,
 
 # ---------------------------------------------------------------- IO + CLI
 
+def balanced_bbox_polarity(raw, ink_mask, supervision=None, box=128,
+                            ink_frac=(0.40, 0.60), stride=None):
+    """Sean's balanced-box polarity test (Discord, 2026-08-25).
+
+    Tile the image with box x box windows (stride defaults to box), keep only
+    windows whose labeled-ink fraction is inside ink_frac and (if given) that
+    lie fully inside the supervision mask, and compare mean ink vs mean
+    non-ink intensity within each window. Returns (frac_boxes_ink_brighter,
+    mean_delta, n_boxes). Robust to global illumination and to halo effects
+    because ink and background are matched within ~1.2 mm of each other.
+    """
+    import numpy as np
+    stride = stride or box
+    h, w = raw.shape
+    wins_bright, deltas = 0, []
+    n = 0
+    for y in range(0, h - box + 1, stride):
+        for x in range(0, w - box + 1, stride):
+            sl = (slice(y, y + box), slice(x, x + box))
+            m = ink_mask[sl]
+            if supervision is not None and not supervision[sl].all():
+                continue
+            f = float(m.mean())
+            if not (ink_frac[0] <= f <= ink_frac[1]):
+                continue
+            r = raw[sl].astype(np.float32)
+            d = float(r[m].mean() - r[~m].mean())
+            deltas.append(d)
+            wins_bright += d > 0
+            n += 1
+    if n == 0:
+        return None, None, 0
+    return wins_bright / n, float(np.mean(deltas)), n
+
+
 def load_stack(path):
     if path.endswith(".npy"):
         return np.load(path, mmap_mode="r")

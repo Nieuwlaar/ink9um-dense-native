@@ -431,6 +431,18 @@ window mean cancels the two lobes. So the usable raw signature is the
 surface-vs-deep contrast (the depth-band gate above), not any single
 window's sign.
 
+Two scoping notes. The quick check quoted in the release thread ("55 to
+62% brighter") was run on a teacher-selected component population; the
+full study above, on all components and on manual labels, lands at 52/46%,
+consistent with the independent local-background numbers posted in that
+thread. And polarity is scroll-dependent chemistry, not physics of carbon:
+on the same balanced-box test other scrolls come out solidly bright
+(Paris4, PHerc1667) or solidly dark (PHerc0814), so a fixed-polarity veto
+would actively hurt on some scrolls even where it helps on others.
+`vetoes.py` now ships `balanced_bbox_polarity()` (the matched-box test
+suggested in that thread) so the polarity of any labeled segment can be
+measured before anyone keys a filter to it.
+
 Two related checks from the same study:
 
 - **No dark beam-hardening halo at annulus scale.** The concern that beam
