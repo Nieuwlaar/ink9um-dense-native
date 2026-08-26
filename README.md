@@ -346,11 +346,17 @@ w047, the released checkpoint flags **26.9%** of the blank segment's papyrus
 data itself. No model, no training, applicable to any ink probability map:
 
 1. **CT-void veto**: real ink sits on papyrus; a detection darker than its
-   surroundings in the mid-depth CT is a void or damage shadow.
-2. **Raw-darkness sign test**: carbon ink is darker than clean papyrus; each
-   detection must be darker than a wide elliptical annulus from which all
-   detected pixels are excluded (small square rings are exploitable by fold
-   shadows, so that exclusion matters).
+   surroundings in the mid-depth CT is a void or damage shadow. Measured
+   cost on known ink: 9.1% of teacher-confirmed ink components, 0/50
+   manually labeled ones (see the correction below).
+2. **Raw-darkness sign test** (report-only since the 2026-08-26
+   correction): the shipped version vetoed detections not darker than a
+   wide elliptical annulus from which all detected pixels are excluded.
+   The annulus geometry is sound (small square rings are exploitable by
+   fold shadows, so that exclusion matters), but the sign premise is not:
+   measured on known ink, the veto removes half to two thirds of it
+   (50–65% across configurations and label sources). The tool now
+   reports each component's sigma and only vetoes with `--dark-veto`.
 3. **Line-pitch test** (reported, never vetoes): text sits in rows at
    2–4.5 mm pitch; a Monte-Carlo test says whether surviving detections are
    row-organized. On the blank segment it correctly reports "not
@@ -361,11 +367,15 @@ data itself. No model, no training, applicable to any ink probability map:
 4. **Depth-band gate** (documented concept): ink lives in a narrow band of
    layers at the papyrus surface, so with a per-layer prediction stack,
    detections peaking far from that band can be rejected. Not implemented
-   here because it needs the full layer stack; the three filters above run
-   from one probability map, one surface volume, and one composite.
+   here because it needs the full layer stack; the filters above run
+   from one probability map, one surface volume, and one composite. The
+   correction below gives this gate its concrete form: the usable raw-CT
+   ink signature at 113 keV is a surface-vs-deep layer contrast, not a
+   single-window sign.
 
 Measured on the released checkpoint's maps at threshold 0.30 (min area
-300 px, defaults of `vetoes.py`):
+300 px, the shipped defaults; since the correction below the last stage
+requires `--dark-veto`):
 
 | stage | w053 (blank) flagged | w047 teacher-component recall |
 |---|---|---|
@@ -380,11 +390,76 @@ connected components of the w047 78 keV map above half its maximum, minimum
 the stage. The w053 column and the line-pitch p-value reproduce from
 `vetoes.py` alone.
 
-The reading: the void veto is nearly free, and the darkness test removes most
-of the remaining blank-segment false area, at a real recall cost at this
-energy, because faint 113 keV ink is not always measurably darker than its
-background. Both filters are threshold-parameterized, so you choose the
-trade-off; the defaults are the measured operating points above.
+The original reading was that the darkness test removes most of the
+blank-segment false area "at a real recall cost". The correction below
+quantifies that cost on known ink, and it is not acceptable as a default:
+the veto is a coin flip on real ink. The table stays because the w053
+column is real (the veto genuinely removes blank-segment false area); what
+changed is the understanding of the recall column.
+
+## Correction (2026-08-26): the darkness veto's sign premise fails on known ink
+
+Community feedback on this release flagged the assumption behind filter 2:
+in most ink found so far, ink reads *brighter* in the raw CT, not darker.
+Measured on this repo's own ground truth, that is right, and the shipped
+raw-darkness veto is wrong. Sign of every known-ink component against the
+same K201 annulus the veto uses (PHerc0139, native 113 keV, sheet-window
+mean):
+
+| population | n | median sigma | brighter than annulus | veto (sigma < −0.05) kills |
+|---|---|---|---|---|
+| teacher-confirmed components, 14 segments | 9,362 | +0.024 | 51.9% | **55.6%** |
+| manually labeled components, 5 sets | 50 | −0.047 | 46.0% | **50.0%** |
+
+With the veto's exact shipped configuration (`--raw-from-stack`, i.e. the
+mid-window z 8–20 composite, which sits mostly on the bright surface lobe
+described below) the cost is worse still: it kills **65.0%** of w047's 605
+teacher-confirmed ink components (median sigma +0.106, 59.3% brighter) and
+**60%** of the 50 manually labeled ones (per set 33–100%). The 16.1%
+recall in the stage table above is the same fact seen through the model's
+detections. Stacked with the void veto, 75.2% of w047's known-ink
+components are removed.
+
+Real ink at this energy is essentially **sign-neutral** on the sheet-window
+mean (the IQR, ~0.7 sigma, dwarfs either median) and mildly *bright* on
+the mid-window composite the tool actually uses, so a veto keyed to
+"darker than background" discards half to two thirds of it. The per-layer profile
+explains why: ink reads slightly *bright* at the writing surface
+(z 8–14, peak +0.07 sigma at z 13) and slightly *dark* a few layers behind
+it (z 17–23, −0.06..−0.08), in 15 of 19 segments measured; the 18-layer
+window mean cancels the two lobes. So the usable raw signature is the
+surface-vs-deep contrast (the depth-band gate above), not any single
+window's sign.
+
+Two related checks from the same study:
+
+- **No dark beam-hardening halo at annulus scale.** The concern that beam
+  hardening darkens the area around ink (which would bias the annulus)
+  does not hold on this data: all 14 teacher segments show a faint
+  *bright* rim within 20 px of ink, and moving the annulus to
+  r = 60–160 px shifts medians by ≤0.03 sigma on 17 of 19 segments. The
+  annulus geometry is fine; the sign premise is what fails.
+- **The CT-void veto is not free either.** Measured directly on known ink
+  it kills 9.1% of teacher-confirmed components (7.7–11.8% per segment
+  on the sheet-window study; 10.2% on w047 with the tool's exact
+  configuration; 0/50 manually labeled). The kill is not halo-mediated; it
+  correlates with the ink's own darkness (18.3% kill among dark-reading
+  ink vs 1.4% among bright), so stacked with the darkness veto the two
+  compound: the darkness veto keeps only the dark-reading part of real
+  ink, and the void veto then removes about 1 in 5 of those.
+
+So `vetoes.py` no longer applies the darkness veto by default:
+it computes and reports each component's sigma (the statistic is still
+informative) and only vetoes when `--dark-veto` is passed. The CT-void
+veto remains on by default with its measured cost now documented; set a
+large `--void-delta` to disable it. One caveat carries over from the
+study: the teacher components are 78 keV model output, not human ground
+truth (the blank control w053 carries teacher components with the same
+sigma distribution), which is why the 50 manually labeled components are
+quoted alongside; both populations agree on every conclusion. Thanks to
+the community reviewer who flagged the sign assumption; the full sign
+study (9,362 + 50 components, radial halo profiles, per-layer sign curves)
+was run on PHerc0139 only and its numbers are quoted above.
 
 This is also a comment on the metric gap: pixel AUC barely moves when a map
 hallucinates on damage, but a blank-segment flag rate does. A better model and
@@ -407,8 +482,10 @@ detector works; a natural choice at ~8–9 µm is the repaired
   from a different basin (soup42) is the obvious follow-up and has not been
   run.
 - The false-positive numbers are measured on one scroll's blank/ink pair at
-  one energy; the darkness veto in particular is aggressive at 113 keV. Treat
-  the defaults as measured starting points, not universal constants.
+  one energy. The darkness veto's premise fails on known ink at 113 keV
+  (see the correction in section 5) and it is report-only by default; the
+  void veto costs a measured 9.1% of teacher-confirmed ink. Treat all
+  defaults as measured starting points, not universal constants.
 - The z-ensemble multiplies inference time by the number of windows.
 - Better AUC is not yet readable text: on these native 113 keV segments the
   improved maps show letter-shaped strokes, not transcribable lines.
@@ -437,8 +514,11 @@ python native-eval/native_bench.py metrics --seg-dir <dir> --pred out/title_zavg
 python native-eval/native_bench.py fp-control \
     --ink-seg-dir <w047_dir> --ink-pred out/w047_prob.npy \
     --blank-seg-dir <w053_dir> --blank-pred out/w053_prob.npy
+# --dark-veto restores the pre-correction darkness stage (see section 5);
+# without it the sigma is reported but not applied
 ./vetoes.py apply --prob out/w053_prob.npy --stack <w053_dir>/zarr113 \
-    --valid <w053_dir>/valid113.npy --raw-from-stack --th 0.30 --out out/w053_veto
+    --valid <w053_dir>/valid113.npy --raw-from-stack --th 0.30 --dark-veto \
+    --out out/w053_veto
 
 # the dense native-scan training run (two arms, ~5 h on two cloud 4090s)
 cat training/REPRODUCE.md

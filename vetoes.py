@@ -10,16 +10,38 @@ look like in the CT data itself, independent of any model:
    detection whose mid-depth CT intensity is much darker than its immediate
    surroundings is sitting over a void or damage shadow, not on substrate.
    Component is vetoed when (component mean - annulus mean) <= -void_delta
-   in the mid-depth CT average.
+   in the mid-depth CT average. Measured cost on known ink (PHerc0139,
+   native 113 keV, defaults): 9.1% of teacher-confirmed ink components
+   (7.7-11.8% per segment), 0/50 manually labeled ones. The kill is not
+   halo-mediated (no dark beam-hardening halo was measurable within 60 px
+   of ink; correlation with near-halo depth 0.05-0.19); it correlates with
+   the ink's own darkness (r = 0.49 with raw sigma; 18.3% kill among
+   dark-reading ink vs 1.4% among bright). Combined with the raw-darkness
+   veto the two therefore compound: the darkness veto keeps only the dark
+   half of real ink, and the void veto removes ~1 in 5 of those.
 
-2. Raw-darkness sign test (needs a raw intensity composite): carbon ink is
-   DARKER than clean papyrus in these scans. Each surviving component's mean
-   raw intensity is compared against a wide elliptical annulus (201 px
-   kernel) from which ALL detected pixels are excluded, so one detection
-   cannot serve as another's "background". Components not significantly
-   darker than their annulus (sigma >= sigma_max, default -0.05) are vetoed.
-   The large ellipse matters: small square rings can land entirely inside a
-   fold's shadow moat and make a bright artifact look "dark".
+2. Raw-darkness sign test (needs a raw intensity composite): REPORT-ONLY by
+   default since the 2026-08-26 correction. The original premise, "carbon
+   ink is darker than clean papyrus", fails on measurement: on PHerc0139's
+   native 113 keV scan, known ink is sign-NEUTRAL on the sheet-window mean
+   (9,362 teacher-confirmed components across 14 segments: median
+   +0.024 sigma, 51.9% brighter than their annulus; 50 manually labeled
+   components: median -0.047, 54% darker; IQR ~0.7 sigma either way).
+   The mechanism: ink reads slightly BRIGHT at the writing surface
+   (z 8-14, peak +0.07 sigma) and slightly DARK a few layers behind it
+   (z 17-23, -0.06..-0.08), and the sheet-window mean cancels the two
+   lobes; the default --raw-from-stack composite (mid window z 8-20) sits
+   mostly on the bright lobe, where known ink reads mildly bright (w047:
+   median +0.106, 59.3% brighter). A veto at sigma < -0.05 therefore
+   kills half to two thirds of real ink (55.6% of the 9,362 teacher
+   components on the sheet-window mean; 65.0% of w047's 605 components
+   and 60% of the manually labeled ones with this tool's own composite):
+   a coin flip or worse, not a filter. Per-component sigma is still computed and
+   reported (the annulus statistics remain useful, and the wide ellipse
+   from which ALL detected pixels are excluded is still the right way to
+   measure them: small square rings can land entirely inside a fold's
+   shadow moat). Pass dark_veto=True / --dark-veto to restore the old
+   vetoing behavior, understanding its measured cost.
 
 3. Line-pitch test (report only, never vetoes): written text is organized
    in rows at a regular pitch (2.0-4.5 mm in Herculaneum papyri). The test
@@ -27,16 +49,19 @@ look like in the CT data itself, independent of any model:
    the best residual against a Monte-Carlo null of uniformly random points.
    Low p = row-organized = more likely text. The evidence is one-sided:
    few components cannot pass, and real text mixed with scattered false
-   positives dilutes the fit — so a high p argues against text while the
+   positives dilutes the fit, so a high p argues against text while the
    absence of a low p proves nothing. That is why it reports, never vetoes.
 
 4. Depth-band gate (concept, not implemented here): ink lives in a narrow
    band of layers at the papyrus surface. With a per-layer prediction stack
    (or per-layer raw composites) a detection whose response peaks far from
    the surface band, or is spread evenly over all depths, can be rejected.
-   This needs the full layer stack per prediction, which this single-map
-   tool does not require; the three filters above run from one probability
-   map, one surface volume, and one composite.
+   The sign study above gives this gate its concrete raw-CT form: the
+   usable signature is the surface-vs-deep contrast (bright at z 8-14,
+   dark at z 17-23), not any single-window mean. This needs the full layer
+   stack per prediction, which this single-map tool does not require; the
+   filters above run from one probability map, one surface volume, and one
+   composite.
 
 Inputs are plain arrays; nothing here depends on which model produced the
 probability map.
@@ -45,7 +70,7 @@ Usage:
   vetoes.py apply --prob PROB.npy --stack STACK --out PREFIX
       [--th 0.30] [--min-area 300] [--valid VALID.npy]
       [--void-delta 8.0] [--mid 8 20]
-      [--raw RAW.png|--raw-from-stack] [--sigma-max -0.05]
+      [--raw RAW.png|--raw-from-stack] [--sigma-max -0.05] [--dark-veto]
       [--voxel-um 9.362] [--n-mc 2000]
 
   PROB.npy   float (H, W) ink probability map in [0, 1]
@@ -117,7 +142,9 @@ def raw_sigma(comp_mask, raw, all_flagged=None, pad=130):
     detections cannot inflate each other's background. A 41-81 px square
     ring is exploitable: a fold's shadow moat can fill the whole ring and
     make a bright artifact score as "dark". Returns
-    (comp mean - annulus mean) / annulus std; ink should be clearly negative.
+    (comp mean - annulus mean) / annulus std. NOTE: measured on known ink
+    this statistic is sign-neutral (see module docstring, correction of
+    2026-08-26); do not assume ink is clearly negative.
     """
     ys, xs = np.where(comp_mask)
     y0, y1 = max(0, ys.min() - pad), min(raw.shape[0], ys.max() + pad)
@@ -175,8 +202,9 @@ def line_pitch_p(cents, voxel_um=9.362, pitch_mm=(2.0, 4.6, 0.25),
 
 def apply_vetoes(prob, stack, th=0.30, min_area=300, valid=None,
                  void_delta=8.0, mid=(8, 20), raw=None, sigma_max=-0.05,
-                 voxel_um=9.362, n_mc=2000):
-    """Threshold -> min-area components -> CT-void veto -> raw-darkness veto
+                 dark_veto=False, voxel_um=9.362, n_mc=2000):
+    """Threshold -> min-area components -> CT-void veto -> raw-darkness
+    report (veto only when dark_veto=True; see docstring correction)
     -> line-pitch report. Returns (surviving_mask, report_dict)."""
     if valid is None:
         valid = np.zeros(prob.shape, bool)
@@ -203,14 +231,21 @@ def apply_vetoes(prob, stack, th=0.30, min_area=300, valid=None,
     rep["flagged_frac_void_veto"] = float(m2.sum() / nval)
 
     keep3 = keep2
+    m3 = m2
     if raw is not None:
         sig = {i: raw_sigma(lab == i, raw, all_flagged=m1) for i in keep2}
-        keep3 = [i for i in keep2 if sig[i] < sigma_max]
-        rep["n_after_darkness_veto"] = len(keep3)
-        m3 = np.isin(lab, keep3) if keep3 else np.zeros_like(m0)
-        rep["flagged_frac_darkness_veto"] = float(m3.sum() / nval)
-    else:
-        m3 = m2
+        sv = np.array([sig[i] for i in keep2], dtype=np.float64)
+        rep["raw_sigma_median"] = float(np.median(sv)) if len(sv) else None
+        rep["raw_sigma_frac_dark"] = (
+            float((sv < sigma_max).mean()) if len(sv) else None)
+        rep["dark_veto_applied"] = bool(dark_veto)
+        if dark_veto:
+            # Legacy behavior. Measured on PHerc0139 native 113 keV: this
+            # veto removes 50-65% of KNOWN ink (see module docstring).
+            keep3 = [i for i in keep2 if sig[i] < sigma_max]
+            rep["n_after_darkness_veto"] = len(keep3)
+            m3 = np.isin(lab, keep3) if keep3 else np.zeros_like(m0)
+            rep["flagged_frac_darkness_veto"] = float(m3.sum() / nval)
 
     cents = [(cent[i][1], cent[i][0]) for i in keep3]
     p = line_pitch_p(cents, voxel_um=voxel_um, n_mc=n_mc)
@@ -258,6 +293,10 @@ def main():
     p.add_argument("--raw", default=None)
     p.add_argument("--raw-from-stack", action="store_true")
     p.add_argument("--sigma-max", type=float, default=-0.05)
+    p.add_argument("--dark-veto", action="store_true",
+                   help="restore the pre-correction raw-darkness VETO "
+                        "(default: report per-component sigma only; the "
+                        "veto removes 50-65%% of known ink, see docstring)")
     p.add_argument("--voxel-um", type=float, default=9.362)
     p.add_argument("--n-mc", type=int, default=2000)
     a = ap.parse_args()
@@ -274,6 +313,7 @@ def main():
     mask, rep = apply_vetoes(prob, stack, th=a.th, min_area=a.min_area,
                              valid=valid, void_delta=a.void_delta,
                              mid=tuple(a.mid), raw=raw, sigma_max=a.sigma_max,
+                             dark_veto=a.dark_veto,
                              voxel_um=a.voxel_um, n_mc=a.n_mc)
     os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     np.save(a.out + "_mask.npy", mask)
